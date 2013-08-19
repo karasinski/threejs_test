@@ -14,13 +14,45 @@
       }
 
       #oldie { background-color: #ddd !important }
+
+      #info, #delete {
+        position: absolute;
+        top: 0;
+        padding: 10px;
+      }
+
+      #info {
+        left: 0;
+      }
+
+      #delete {
+        width: 50px;
+        right: 0;
+      }
+
+      #delete:hover {
+        background-color: #aeaeae;
+      }
     </style>
   </head>
   <body>
-
+    <div id="info">
+      what am i doing?
+    </div>
+    <div id="delete" onclick="delete_cookie()">
+      delete
+    </div>
+    <script src="cookies.js"></script>
     <script src="three.min.js"></script>
     <!--<script src="Detector.js"></script>
     <script src="stats.min.js"></script>-->
+
+    <script>
+      function delete_cookie() {
+        docCookies.removeItem("map");
+        location.reload();
+      }
+    </script>
 
     <script>
       // if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -36,10 +68,36 @@
       var voxelPosition = new THREE.Vector3(), tmpVec = new THREE.Vector3(), normalMatrix = new THREE.Matrix3();
       var cubeGeo, cubeMaterial;
       var i, intersector;
-      var map = [];
+
+      if (docCookies.getItem("map") != null) {
+        var map = JSON.parse(docCookies.getItem("map"));
+      } else {
+        var map = [];
+      }
 
       init();
       animate();
+
+      // function draw_saved_cubes() {
+      //   var geometry = new THREE.CubeGeometry( 50, 50, 50 );
+      //   var material = new THREE.MeshLambertMaterial( { color: 0xfeb74c, ambient: 0x00ff80, shading: THREE.FlatShading } );
+
+      //   for ( var i = 0; i < 100; i++ ) {
+      //     console.log('test');
+      //     var old_cube = THREE.Mesh( geometry, material );
+      //     console.log(old_cube);
+      //     // cube.scale.y = Math.floor( Math.random() * 2 + 1 );
+
+      //     console.log('pos');
+      //     old_cube.position.x = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 50 + 25;
+      //     old_cube.position.y = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 50 + 25;
+      //     old_cube.position.z = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 50 + 25;
+
+      //     console.log('add');
+      //     scene.add( old_cube );
+
+      //   }
+      // }
 
       function init() {
         container = document.createElement( 'div' );
@@ -54,6 +112,7 @@
         rollOverGeo = new THREE.CubeGeometry( 50, 50, 50 );
         rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
         rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
+        rollOverMesh.position.y = 1000;
         scene.add( rollOverMesh );
 
         // cubes
@@ -89,6 +148,9 @@
 
         mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
 
+        // Add Old Cubes
+        add_old_cubes();
+
         // Lights
         var ambientLight = new THREE.AmbientLight( 0x606060 );
         scene.add( ambientLight );
@@ -114,6 +176,27 @@
         document.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
 
         window.addEventListener( 'resize', onWindowResize, false );
+      }
+
+      function add_old_cubes() {
+        if (docCookies.getItem("map") != null) {
+          console.log('you got dat cookie');
+          var temp_map = JSON.parse(docCookies.getItem("map"));
+
+          console.log(temp_map);
+          console.log(temp_map[0]);
+              
+          for (var i = 0; i < temp_map.length; i++) {
+            var cube = new THREE.Mesh( cubeGeo, cubeMaterial );
+
+            cube.position.x = temp_map[i].x;
+            cube.position.y = temp_map[i].y;
+            cube.position.z = temp_map[i].z;
+            console.log(cube.position);
+
+            scene.add( cube );
+          }
+        }
       }
 
       function onWindowResize() {
@@ -180,6 +263,10 @@
             voxel.matrixAutoUpdate = false;
             voxel.updateMatrix();
             scene.add( voxel );
+            map.push(voxel.position);
+
+            console.log(map);
+            docCookies.setItem("map", JSON.stringify(map), new Date(2020, 1, 1));
           }
         }
       }
