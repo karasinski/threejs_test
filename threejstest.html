@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>three.js webgl - interactive - voxel painter</title>
+    <title>three.js webgl</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
@@ -77,27 +77,6 @@
 
       init();
       animate();
-
-      // function draw_saved_cubes() {
-      //   var geometry = new THREE.CubeGeometry( 50, 50, 50 );
-      //   var material = new THREE.MeshLambertMaterial( { color: 0xfeb74c, ambient: 0x00ff80, shading: THREE.FlatShading } );
-
-      //   for ( var i = 0; i < 100; i++ ) {
-      //     console.log('test');
-      //     var old_cube = THREE.Mesh( geometry, material );
-      //     console.log(old_cube);
-      //     // cube.scale.y = Math.floor( Math.random() * 2 + 1 );
-
-      //     console.log('pos');
-      //     old_cube.position.x = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 50 + 25;
-      //     old_cube.position.y = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 50 + 25;
-      //     old_cube.position.z = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 50 + 25;
-
-      //     console.log('add');
-      //     scene.add( old_cube );
-
-      //   }
-      // }
 
       function init() {
         container = document.createElement( 'div' );
@@ -183,17 +162,15 @@
           console.log('you got dat cookie');
           var temp_map = JSON.parse(docCookies.getItem("map"));
 
-          console.log(temp_map);
-          console.log(temp_map[0]);
-              
           for (var i = 0; i < temp_map.length; i++) {
             var cube = new THREE.Mesh( cubeGeo, cubeMaterial );
 
-            cube.position.x = temp_map[i].x;
-            cube.position.y = temp_map[i].y;
-            cube.position.z = temp_map[i].z;
+            cube.position.x = temp_map[i].position.x;
+            cube.position.y = temp_map[i].position.y;
+            cube.position.z = temp_map[i].position.z;
+            cube.uuid = temp_map[i].id;
+            
             console.log(cube.position);
-
             scene.add( cube );
           }
         }
@@ -250,6 +227,15 @@
           if ( isCtrlDown ) {
             if ( intersector.object != plane ) {
               scene.remove( intersector.object );
+              console.log('delete');
+              console.log(intersector.object);
+              for (var i = 0; i < map.length; i++) {
+                if (map[i].id == intersector.object.uuid) {
+                  console.log('removed ', map[i].id);
+                  map.remove(i);
+                  docCookies.setItem("map", JSON.stringify(map), new Date(2020, 1, 1));
+                }
+              }
             }
 
           // create cube
@@ -263,7 +249,12 @@
             voxel.matrixAutoUpdate = false;
             voxel.updateMatrix();
             scene.add( voxel );
-            map.push(voxel.position);
+            console.log(voxel);
+            map.push({
+              "position" : voxel.position, 
+              "color" : "yellow",
+              "id" : voxel.uuid
+            });
 
             console.log(map);
             docCookies.setItem("map", JSON.stringify(map), new Date(2020, 1, 1));
@@ -327,6 +318,12 @@
         camera.lookAt( scene.position );
         renderer.render( scene, camera );
       }
+
+      Array.prototype.remove = function(from, to) {
+        var rest = this.slice((to || from) + 1 || this.length);
+        this.length = from < 0 ? this.length + from : from;
+        return this.push.apply(this, rest);
+      };
 
     </script>
   </body>
