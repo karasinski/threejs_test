@@ -15,10 +15,14 @@
 
       #oldie { background-color: #ddd !important }
 
-      #info, #delete {
+      #info, #delete, #color {
         position: absolute;
         top: 0;
         padding: 10px;
+      }
+
+      #color {
+        right: 100px;
       }
 
       #info {
@@ -39,6 +43,9 @@
     <div id="info">
       what am i doing?
     </div>
+    <div id="color">
+      color
+    </div>
     <div id="delete" onclick="delete_cookie()">
       delete
     </div>
@@ -52,6 +59,32 @@
         docCookies.removeItem("map");
         location.reload();
       }
+
+      function getChar(event) {
+        if (event.which == null) {
+          return String.fromCharCode(event.keyCode)
+        } else if (event.which!=0 && event.charCode!=0) {
+          return String.fromCharCode(event.which)
+        } else {
+          return null
+        }
+      }
+
+      document.onkeypress = function(event) {
+        var char = getChar(event || window.event)
+        if (!char) return
+        colorPicker(char);
+      }
+
+      function colorPicker(char) {
+        if (char >= 0 && char <= 3) {
+          current_color = color[char - 1];
+
+          cubeMaterial = new THREE.MeshLambertMaterial( { color: current_color, ambient: current_color, shading: THREE.FlatShading } );
+          document.getElementById("color").style.backgroundColor = '#' + Math.floor(current_color).toString(16);
+        }
+      }
+
     </script>
 
     <script>
@@ -66,7 +99,7 @@
 
       var rollOverMesh, rollOverMaterial;
       var voxelPosition = new THREE.Vector3(), tmpVec = new THREE.Vector3(), normalMatrix = new THREE.Matrix3();
-      var cubeGeo, cubeMaterial;
+      var cubeGeo, cubeMaterial, color = [0xFEB74C, 0x4E46B1, 0x33A982], current_color = color[0];
       var i, intersector;
 
       if (docCookies.getItem("map") != null) {
@@ -96,8 +129,10 @@
 
         // cubes
         cubeGeo = new THREE.CubeGeometry( 50, 50, 50 );
-        cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xfeb74c, ambient: 0x00ff80, shading: THREE.FlatShading } );
-        cubeMaterial.ambient = cubeMaterial.color;
+        console.log(current_color);
+        cubeMaterial = new THREE.MeshLambertMaterial( { color: current_color, ambient: current_color, shading: THREE.FlatShading } );
+        document.getElementById("color").style.backgroundColor = '#' + Math.floor(current_color).toString(16);
+
 
         // picking
         projector = new THREE.Projector();
@@ -169,8 +204,7 @@
             cube.position.y = temp_map[i].position.y;
             cube.position.z = temp_map[i].position.z;
             cube.uuid = temp_map[i].id;
-            
-            console.log(cube.position);
+
             scene.add( cube );
           }
         }
@@ -227,11 +261,9 @@
           if ( isCtrlDown ) {
             if ( intersector.object != plane ) {
               scene.remove( intersector.object );
-              console.log('delete');
-              console.log(intersector.object);
+
               for (var i = 0; i < map.length; i++) {
                 if (map[i].id == intersector.object.uuid) {
-                  console.log('removed ', map[i].id);
                   map.remove(i);
                   docCookies.setItem("map", JSON.stringify(map), new Date(2020, 1, 1));
                 }
@@ -249,14 +281,13 @@
             voxel.matrixAutoUpdate = false;
             voxel.updateMatrix();
             scene.add( voxel );
-            console.log(voxel);
+
             map.push({
               "position" : voxel.position, 
               "color" : "yellow",
               "id" : voxel.uuid
             });
 
-            console.log(map);
             docCookies.setItem("map", JSON.stringify(map), new Date(2020, 1, 1));
           }
         }
