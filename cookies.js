@@ -29,14 +29,14 @@ var docCookies = {
     if (vEnd) {
       switch (vEnd.constructor) {
         case Number:
-          sExpires = vEnd === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + vEnd;
-          break;
+        sExpires = vEnd === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + vEnd;
+        break;
         case String:
-          sExpires = "; expires=" + vEnd;
-          break;
+        sExpires = "; expires=" + vEnd;
+        break;
         case Date:
-          sExpires = "; expires=" + vEnd.toGMTString();
-          break;
+        sExpires = "; expires=" + vEnd.toGMTString();
+        break;
       }
     }
     document.cookie = escape(sKey) + "=" + escape(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
@@ -53,6 +53,36 @@ var docCookies = {
   keys: /* optional method: you can safely remove it! */ function () {
     var aKeys = document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g, "").split(/\s*(?:\=[^;]*)?;\s*/);
     for (var nIdx = 0; nIdx < aKeys.length; nIdx++) { aKeys[nIdx] = unescape(aKeys[nIdx]); }
-    return aKeys;
+      return aKeys;
   }
 };
+
+
+//Now to avoid eating our cookies.
+
+function deleteCookie() {
+  docCookies.removeItem("map");
+  location.reload();
+}
+
+function handleCookie(voxel) {
+  if (voxel) {
+    map.push({
+      "position" : voxel.position, 
+      "color" : voxel.material.color.getHex(),
+      "id" : voxel.uuid
+    });
+
+    docCookies.setItem("map", JSON.stringify(map), new Date(2020, 1, 1));
+
+  } else {
+
+    for (var i = 0; i < map.length; i++) {
+      if (map[i].id == intersector.object.uuid) {
+        map.remove(i);
+        docCookies.setItem("map", JSON.stringify(map), new Date(2020, 1, 1));
+        break;
+      }
+    }
+  }
+}
