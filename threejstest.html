@@ -197,9 +197,14 @@
         if (docCookies.getItem("map") != null) {
           console.log('you got dat cookie');
           var temp_map = JSON.parse(docCookies.getItem("map"));
+          console.log(temp_map);
 
           for (var i = 0; i < temp_map.length; i++) {
-            var cube = new THREE.Mesh( cubeGeo, cubeMaterial );
+            var old_color = temp_map[i].color            
+            
+            var oldCubeMaterial = new THREE.MeshLambertMaterial( { color: old_color, ambient: old_color, shading: THREE.FlatShading } );
+
+            var cube = new THREE.Mesh( cubeGeo, oldCubeMaterial );
 
             cube.position.x = temp_map[i].position.x;
             cube.position.y = temp_map[i].position.y;
@@ -285,7 +290,7 @@
 
             map.push({
               "position" : voxel.position, 
-              "color" : "yellow",
+              "color" : voxel.material.color.getHex(),
               "id" : voxel.uuid
             });
 
