@@ -77,7 +77,8 @@
       }
 
       function colorPicker(char) {
-        if (char >= 0 && char <= 3) {
+        if (char == 1 || char == 2 || char == 3) {
+          console.log(char);
           current_color = color[char - 1];
 
           cubeMaterial = new THREE.MeshLambertMaterial( { color: current_color, ambient: current_color, shading: THREE.FlatShading } );
