@@ -16,6 +16,13 @@ window.onload = function() {
   var cubeGeo, cubeMaterial, color = [0xFEB74C, 0x4E46B1, 0x33A982], current_color = color[0];
   var i, intersector;
 
+  (function() {
+      color_el = document.getElementById("color");
+      current_color_hex = '#' + Math.floor(current_color).toString(16);
+      color_el.style.backgroundColor = current_color_hex;
+      color_el.innerHTML = current_color_hex;
+    })()
+
   if (docCookies.getItem("map") != null) {
     var map = JSON.parse(docCookies.getItem("map"));
   } else {
@@ -191,14 +198,17 @@ window.onload = function() {
       current_color = color[char - 1];
 
       cubeMaterial = new THREE.MeshLambertMaterial( { color: current_color, ambient: current_color, shading: THREE.FlatShading } );
-      document.getElementById("color").style.backgroundColor = '#' + Math.floor(current_color).toString(16);
+      color_el = document.getElementById("color");
+      current_color_hex = '#' + Math.floor(current_color).toString(16);
+      color_el.style.backgroundColor = current_color_hex;
+      color_el.innerHTML = current_color_hex;
     }
   }
 
   function deleteCube() {
     if ( intersector.object != plane ) {
       scene.remove( intersector.object );
-      handleCookie();
+      handleCookie(map, intersector);
     }
   }
 
@@ -213,7 +223,7 @@ window.onload = function() {
     voxel.updateMatrix();
     scene.add( voxel );
 
-    handleCookie(voxel);
+    handleCookie(map, intersector, voxel);
   }
 
   //Key presses, mouse clicks
