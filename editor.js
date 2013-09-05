@@ -13,14 +13,11 @@ window.onload = function() {
 
   var rollOverMesh, rollOverMaterial;
   var voxelPosition = new THREE.Vector3(), tmpVec = new THREE.Vector3(), normalMatrix = new THREE.Matrix3();
-  var cubeGeo, cubeMaterial, color = [0xFEB74C, 0x4E46B1, 0x33A982], current_color = color[0];
+  var cubeGeo, cubeMaterial, color = [0xFEB74C, 0x4E46B1, 0x33A982, 0xE9466C, 0xCFF349, 0x723DAC], current_color = color[0];
   var i, intersector, objectHovered;
 
   (function() {
-    color_el = document.getElementById("color");
-    current_color_hex = '#' + Math.floor(current_color).toString(16);
-    color_el.style.backgroundColor = current_color_hex;
-    color_el.innerHTML = current_color_hex;
+    color_update();
   })()
 
   if (docCookies.getItem("map") != null) {
@@ -51,7 +48,7 @@ window.onload = function() {
     // cubes
     cubeGeo = new THREE.CubeGeometry( 50, 50, 50 );
     cubeMaterial = new THREE.MeshLambertMaterial( { color: current_color, ambient: current_color, shading: THREE.FlatShading } );
-    document.getElementById("color").style.backgroundColor = '#' + Math.floor(current_color).toString(16);
+    document.getElementById("color").style.backgroundColor = color_to_hex(current_color);
 
     // picking
     projector = new THREE.Projector();
@@ -103,6 +100,8 @@ window.onload = function() {
     // container.appendChild( stats.domElement );
 
     document.getElementById("delete").addEventListener("click", deleteCookie, false);
+    document.getElementById("color").addEventListener("click", chooseCustomColor, false);
+    document.getElementById("custom_color").addEventListener("blur", selectCustomColor, false);
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
     document.addEventListener( 'mousedown', onDocumentMouseDown, false );
     document.addEventListener( 'keydown', onDocumentKeyDown, false );
@@ -165,7 +164,6 @@ window.onload = function() {
   }
 
   function render() {
-
     if ( objectHovered ) {
       objectHovered.material.opacity = 1;
       objectHovered.material.transparent = false;
@@ -181,7 +179,6 @@ window.onload = function() {
 
     if ( intersects.length > 0 ) {
       intersector = getRealIntersector( intersects );
-
       if ( intersector ) {
         setVoxelPosition( intersector );
         if (!isCtrlDown) {
@@ -212,15 +209,23 @@ window.onload = function() {
   };
 
   function colorPicker(char) {
-    if (char == 1 || char == 2 || char == 3) {
+    if (char == 1 || char == 2 || char == 3 || char == 4 || char == 5 || char == 6) {
       current_color = color[char - 1];
 
       cubeMaterial = new THREE.MeshLambertMaterial( { color: current_color, ambient: current_color, shading: THREE.FlatShading } );
-      color_el = document.getElementById("color");
-      current_color_hex = '#' + Math.floor(current_color).toString(16);
-      color_el.style.backgroundColor = current_color_hex;
-      color_el.innerHTML = current_color_hex;
+      color_update();
     }
+  }
+
+  function color_to_hex(current_color) {
+    return '#' + Math.floor(current_color).toString(16);
+  }
+
+  function color_update() {
+    color_el = document.getElementById("color_text");
+    current_color_hex = color_to_hex(current_color);
+    color_el.style.backgroundColor = current_color_hex;
+    color_el.innerHTML = current_color_hex;
   }
 
   function deleteCube() {
@@ -247,6 +252,33 @@ window.onload = function() {
   }
 
   //Key presses, mouse clicks
+
+  function chooseCustomColor() {
+    var custom_color_el = document.getElementById('custom_color');
+    var color_text_el = document.getElementById('color_text');
+
+    console.log(custom_color_el);
+    custom_color_el.value = color_to_hex(current_color);
+    custom_color_el.className = "";
+    color_text.className = "hide";
+    document.getElementById('custom_color').focus();
+  }
+
+  function selectCustomColor() {
+    console.log('im here');
+
+    var custom_color_el = document.getElementById('custom_color');
+    var color_text_el = document.getElementById('color_text');
+
+    var new_color = color_text_el.value;
+
+    current_color = new_color;
+    
+    color_text.className = "";
+    custom_color_el.className = "hide";
+
+    color_update();
+  }
 
   function getChar(event) {
     if (event.which == null) {

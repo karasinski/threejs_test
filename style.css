@@ -15,6 +15,16 @@ body {
 
 #color {
   right: 100px;
+  width: 60px;
+  height: 16px;
+}
+
+#custom_color {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  width: 60px;
+  height: 16px;
 }
 
 #info {
@@ -28,4 +38,8 @@ body {
 
 #delete:hover {
   background-color: #aeaeae;
+}
+
+.hide {
+  display: none;
 }
