@@ -6,8 +6,8 @@ The delete button clears the stored cookie (this cannot be undone).
 ### Todo
 + ~~Remove blocks from cookie when deleting~~
 + ~~Multiple color blocks~~
++ ~~Remove helper block when deleting~~
 + Code cleanup
-+ Remove helper block when deleting
 
 ### Nice to have
 + Custom cube colors

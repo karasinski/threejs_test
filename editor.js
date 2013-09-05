@@ -14,14 +14,14 @@ window.onload = function() {
   var rollOverMesh, rollOverMaterial;
   var voxelPosition = new THREE.Vector3(), tmpVec = new THREE.Vector3(), normalMatrix = new THREE.Matrix3();
   var cubeGeo, cubeMaterial, color = [0xFEB74C, 0x4E46B1, 0x33A982], current_color = color[0];
-  var i, intersector;
+  var i, intersector, objectHovered;
 
   (function() {
-      color_el = document.getElementById("color");
-      current_color_hex = '#' + Math.floor(current_color).toString(16);
-      color_el.style.backgroundColor = current_color_hex;
-      color_el.innerHTML = current_color_hex;
-    })()
+    color_el = document.getElementById("color");
+    current_color_hex = '#' + Math.floor(current_color).toString(16);
+    color_el.style.backgroundColor = current_color_hex;
+    color_el.innerHTML = current_color_hex;
+  })()
 
   if (docCookies.getItem("map") != null) {
     var map = JSON.parse(docCookies.getItem("map"));
@@ -120,7 +120,8 @@ window.onload = function() {
         var old_color = temp_map[i].color            
         var oldCubeMaterial = new THREE.MeshLambertMaterial( 
           { color: old_color, ambient: old_color, shading: THREE.FlatShading } );
-        var cube = new THREE.Mesh( cubeGeo, oldCubeMaterial );
+        var oldCubeGeo = new THREE.CubeGeometry( 50, 50, 50 );
+        var cube = new THREE.Mesh( oldCubeGeo, oldCubeMaterial );
 
         cube.position.x = temp_map[i].position.x;
         cube.position.y = temp_map[i].position.y;
@@ -164,6 +165,13 @@ window.onload = function() {
   }
 
   function render() {
+
+    if ( objectHovered ) {
+      objectHovered.material.opacity = 1;
+      objectHovered.material.transparent = false;
+      objectHovered = null;
+    }
+
     if ( isShiftDown ) {
       theta += mouse2D.x * 3;
     }
@@ -176,7 +184,17 @@ window.onload = function() {
 
       if ( intersector ) {
         setVoxelPosition( intersector );
-        rollOverMesh.position = voxelPosition;
+        if (!isCtrlDown) {
+          rollOverMesh.position = voxelPosition;
+        } else {
+          if ( intersector.object.geometry.faces.length == 12 ) {
+            rollOverMesh.position.z = 10000;
+
+            objectHovered = intersector.object;
+            objectHovered.material.opacity = 0.5;
+            objectHovered.material.transparent = true;
+          }
+        }
       }
     }
 
@@ -215,6 +233,8 @@ window.onload = function() {
   function createCube(intersects) {
     intersector = getRealIntersector( intersects );
     setVoxelPosition( intersector );
+    var cubeGeo = new THREE.CubeGeometry( 50, 50, 50 );
+    var cubeMaterial = new THREE.MeshLambertMaterial( { color: current_color, ambient: current_color, shading: THREE.FlatShading } );
 
     var voxel = new THREE.Mesh( cubeGeo, cubeMaterial );
     voxel.position.copy( voxelPosition );
